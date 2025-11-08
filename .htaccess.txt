@@ -1,24 +1,24 @@
-# .htaccess for lro
-RewriteEngine On
+Options +FollowSymLinks
+# Turn off MultiViews
+Options -MultiViews
 
-SetEnvIf Request_URI ^/https://purl.org/LRO/(.*)$ ONT_BASE=https://github.com/hfpatricio/teste/blob/library-reference-ontology ONT_VERSION=v1.0.0 ONT_ANCHOR=$1
-SetEnvIf Request_URI ^/https://purl.org/LRO/(\d+\.\d+\.\d+)/(.*)$ ONT_VERSION=v$1 ONT_ANCHOR=$2
+# Directive to ensure *.rdf files served as appropriate content type,
+# if not present in main apache config
+AddType application/rdf+xml .rdf
+AddType application/rdf+xml .owl
+AddType text/turtle .ttl
 
-# Rewrite rule to serve HTML content from the vocabulary URI if requested
-RewriteCond %{HTTP_ACCEPT} !application/rdf\+xml.*(text/html|application/xhtml\+xml)
+RewriteEngine on
+
+#Rewrite rules for Asteroids vocabulary extension 
+RewriteCond %{HTTP_ACCEPT} !application/rdf\+xml.*(text/html|application/xhtml\+xml|text/\*|\*/\*)
 RewriteCond %{HTTP_ACCEPT} text/html [OR]
-RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml 
-RewriteRule ^(.*)$ %{ENV:https://github.com/hfpatricio/teste/blob/library-reference-ontology}/%{ENV:ONT_VERSION}/index-en.html#%{ENV:ONT_ANCHOR} [R=303,L,NE]
-
-# Rewrite rule to serve RDF/XML content from the vocabulary URI if requested
+RewriteCond %{HTTP_ACCEPT} application/xhtml\+xml [OR]
+RewriteCond %{HTTP_ACCEPT} text/\* [OR]
 RewriteCond %{HTTP_ACCEPT} \*/\* [OR]
-RewriteCond %{HTTP_ACCEPT} application/rdf\+xml
-RewriteRule ^(.*)$ %{ENV:https://github.com/hfpatricio/teste/blob/library-reference-ontology/lro.rdf} [R=303,L]
-
-RewriteCond %{HTTP_ACCEPT} .+
-RewriteRule ^.*$ %{ENV:https://github.com/hfpatricio/teste/blob/library-reference-ontology/406.html} [R=406,L]
-
-# Default response
-# ---------------------------
-# Rewrite rule to serve the RDF/XML content from the vocabulary URI by default
-RewriteRule ^(.*)$ %{ENV:https://github.com/hfpatricio/teste/blob/library-reference-ontology/lro.rdf} [R=303,L]
+RewriteCond %{HTTP_USER_AGENT} ^Mozilla/.*
+RewriteRule ^asteroids$ https://github.com/hfpatricio/teste/blob/library-reference-ontology/  [R=303,NE,L]
+RewriteCond %{HTTP_ACCEPT} ^.*application/rdf\+xml.* 
+RewriteRule ^asteroids$ https://github.com/hfpatricio/teste/blob/library-reference-ontology/lro.rdf [R=303,NE,L]
+#default response: owl
+RewriteRule ^asteroids$ https://github.com/hfpatricio/teste/blob/library-reference-ontology/lro.owl [R=303,NE,L]
